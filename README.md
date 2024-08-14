@@ -1,12 +1,7 @@
-# Json-Notebook-Converter
-Json Notebook Converter (notebookify.py)
+# Json-Notebook-Converter (notebookify.py)
 
-## Git Ignore
-When converting to ipynb, the script saves the notebook as `[filename]_LOCAL.ipynb`, which you can then edit as needed. The script saves azure's unused json fields as a separate json file to be reattached when you're done editing. 
-You can include the following lines in your `.gitignore` to easily keep these out of the repo:
-
-    *_LOCAL.ipynb
-    *_METADATA.json
+## Installation
+Save the script to your machine. Then you can either add its folder to your path variable or create an alias to it for easy access.
 
 
 ## Usage
@@ -24,3 +19,10 @@ or to convert all (could be a little excessive):
 
     python notebookify.py -j
  
+## Git Ignore
+When converting to ipynb, the script saves the notebook as `[filename]_LOCAL.ipynb`, which you can then edit as needed. The script saves azure's unused json fields as a separate json file to be reattached when you're done editing. 
+You can include the following lines in your `.gitignore` to easily keep these out of the repo:
+
+    *_LOCAL.ipynb
+    *_METADATA.json
+

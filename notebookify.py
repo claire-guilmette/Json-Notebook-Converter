@@ -58,9 +58,6 @@ def jsonifyNotebooks():
     localFiles = [file for file in allFiles if file.endswith(LOCAL_NOTEBOOK_FILE_ENDING)]
     metaFiles = [file for file in allFiles if file.endswith(JSON_METADATA_FILE_ENDING)]
 
-    print(localFiles)
-    print(metaFiles)
-    
     for localFile in localFiles:
         origFileName = localFile[0:-len(LOCAL_NOTEBOOK_FILE_ENDING)]
         metaFile = origFileName + JSON_METADATA_FILE_ENDING
@@ -71,8 +68,8 @@ def jsonifyNotebooks():
             metaJson['properties']['cells'] = cellJson
             exportJson(origFileName + ".json", metaJson)
         else:
-            print(f"missing metadata file for {origFileName}")
-            sys.exit()
+            print(f"missing metadata file for {origFileName}. Skipping")
+            continue
 
 
 
@@ -81,7 +78,7 @@ if len(sys.argv) == 1:
     print("USAGE: python notebookify.py [json_file_1] [json_file_2] ... ")
     print("Or to convert notebooks to json: python notebookify.py -j")
     print("\tThis will combine each file named *_LOCAL.ipynb with its _METADATA.json file")
-elif (len(sys.argv) > 1 and sys.argv[1] == '-j'):
+elif (len(sys.argv) > 1 and sys.argv[1].startswith('-j')):
     jsonifyNotebooks()
     sys.exit()
     
