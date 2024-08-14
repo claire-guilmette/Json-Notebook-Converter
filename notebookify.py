@@ -6,8 +6,11 @@ import os
 
 
 
+LOCAL_NOTEBOOK_FILE_ENDING = "_LOCAL.ipynb"
+JSON_METADATA_FILE_ENDING = "_METADATA.json"
+
 def exportMetadata(fileName, metadata):
-    fileName = Path(fileName.split('.')[0] + '_METADATA.json')
+    fileName = Path(fileName.split('.')[0] + JSON_METADATA_FILE_ENDING)
     print(f"Writing to {fileName}")
     try:
         with open(fileName, 'w', newline="\n") as file:
@@ -17,7 +20,7 @@ def exportMetadata(fileName, metadata):
 
 def exportNotebook(fileName, cells):
     notebook = {"metadata":{}, "cells": cells}
-    fileName = Path(fileName.split('.')[0] + '_LOCAL.ipynb')
+    fileName = Path(fileName.split('.')[0] + LOCAL_NOTEBOOK_FILE_ENDING)
     print(f"Writing to {fileName}")
     try:
         with open(fileName, 'w', newline="\n") as file:
@@ -52,15 +55,15 @@ def jsonifyNotebooks():
     print(f"searching for LOCAL files in {os.getcwd()}")
 
     allFiles = os.listdir('.')
-    localFiles = [file for file in allFiles if file.endswith("_LOCAL.ipynb")]
-    metaFiles = [file for file in allFiles if file.endswith("_METADATA.json")]
+    localFiles = [file for file in allFiles if file.endswith(LOCAL_NOTEBOOK_FILE_ENDING)]
+    metaFiles = [file for file in allFiles if file.endswith(JSON_METADATA_FILE_ENDING)]
 
     print(localFiles)
     print(metaFiles)
     
     for localFile in localFiles:
-        origFileName = localFile[0:-12]
-        metaFile = origFileName + "_METADATA.json"
+        origFileName = localFile[0:-len(LOCAL_NOTEBOOK_FILE_ENDING)]
+        metaFile = origFileName + JSON_METADATA_FILE_ENDING
         if metaFile in metaFiles:
             cellJson = importJson(localFile)['cells']
             metaJson = importJson(metaFile)
@@ -71,19 +74,29 @@ def jsonifyNotebooks():
             print(f"missing metadata file for {origFileName}")
             sys.exit()
 
+
+
 i = 0
 if len(sys.argv) == 1:
     print("USAGE: python notebookify.py [json_file_1] [json_file_2] ... ")
-    print("Or to convert to json: python notebookify.py -j")
+    print("Or to convert notebooks to json: python notebookify.py -j")
     print("\tThis will combine each file named *_LOCAL.ipynb with its _METADATA.json file")
 elif (len(sys.argv) > 1 and sys.argv[1] == '-j'):
     jsonifyNotebooks()
     sys.exit()
     
+workingDirFiles = os.listdir('.')
 for arg in sys.argv:
     if i > 0: 
-        #print(arg)
-        if arg.endswith('_METADATA.json'):
+        existingLocalNotebook = arg.split('.')[0] + LOCAL_NOTEBOOK_FILE_ENDING
+        if existingLocalNotebook in workingDirFiles:
+            print(f"Warning! This process will replace {existingLocalNotebook}.")
+            goOn = input("Do you wish to continue? (y/n):")
+            #anything but yes we skip this file.
+            if not goOn.lower().startswith('y'):
+                continue #ironically, continuing the loop means skipping the file.
+        
+        if arg.endswith(JSON_METADATA_FILE_ENDING):
             print(f"METADATA file {arg} found. Skipping.")
             continue
         currentJson = importJson(arg)
