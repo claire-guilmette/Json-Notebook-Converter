@@ -46,8 +46,15 @@ def jsonifyNotebooks():
         origFileName = localFile[0:-len(LOCAL_NOTEBOOK_FILE_ENDING)]
         
         notebook = importJson(localFile)
-        #Everything but the name goes in the 'properties' object, so pop name off here.
-        name = notebook.pop('name')
+        #Everything but the name goes in the 'properties' object, so pop name off here if exists.
+        name = ''
+        print(notebook.keys())
+        if 'name' in notebook.keys():
+            name = notebook.pop('name')
+        else:
+            name = origFileName
+            print(f'No name field for {localFile}. Generating from filename.')
+        
         #remove empty metadata fields to minimize diff noise
         for cell in notebook['cells']:
             if cell['metadata'] == {}:
@@ -55,9 +62,6 @@ def jsonifyNotebooks():
         jsonObject = {'name': name,
                       'properties': notebook}
         exportJson(origFileName + ".json", jsonObject)
-
-
-
 
 i = 0
 if len(sys.argv) == 1:
