@@ -80,10 +80,10 @@ def jsonifyNotebooks():
                 #normalize line endings
                 modifiedLines = []
                 for line in cell['source']:
-                    print(repr(line))
+                    #print(repr(line))
                     modifiedLine = line.replace("""\r\n""","""\n""")
                     modifiedLine = modifiedLine.replace("""\n""","""\r\n""")
-                    print(repr(modifiedLine))
+                    #print(repr(modifiedLine))
                     modifiedLines.append(modifiedLine)
                 cell['source'] = modifiedLines
             if 'properties' not in metaJson.keys():
