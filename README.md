@@ -3,6 +3,11 @@
 ## Installation
 Save the script to your machine. Then you can either add its folder to your path variable or create an alias to it for easy access.
 
+I use git bash, so I have this in my `aliases.sh` for the shortest usage:
+
+    alias notebookify='python C:/Dir/To/Script/notebookify.py'
+
+Then it's just `notebookify args` in git bash.
 
 ## Usage
 
