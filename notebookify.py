@@ -51,6 +51,7 @@ def importJson(fileName):
 
 
 def cleanupCells(cells):
+    newCells = []
     for cell in cells:
         #clear all outputs
         if cell['cell_type'] == 'code':
@@ -68,6 +69,24 @@ def cleanupCells(cells):
                     #print(repr(modifiedLine))
             modifiedLines.append(modifiedLine)
         cell['source'] = modifiedLines
+
+        newCell = {
+            'cell_type': cell.pop('cell_type')
+        }
+        #VSCode automatically alphabetizes json keys after editing a json file. (annoying, but understandable.)
+        #Synapse keeps them in a logical order instead (sources before outputs, etc.)
+        #This re-orders things to match synapse.
+        if 'metadata' in cell.keys():
+            newCell['metadata'] = cell.pop('metadata')
+            if 'jupyter' in newCell['metadata'].keys():
+                newCell['metadata']['jupyter'] = {'source_hidden':False, 'outputs_hidden':False}
+        newCell['source'] = cell.pop('source')
+        if 'execution_count' in cell.keys():
+            newCell['execution_count'] = cell.pop('execution_count')
+        for key in cell.keys():
+            newCell[key] = cell[key]
+        newCells.append(newCell)
+    return newCells
 
 
 def jsonifyNotebooks():
@@ -88,15 +107,15 @@ def jsonifyNotebooks():
             print(notebook.keys())
             print(metaJson.keys())
             if 'name' not in metaJson.keys():
-                name = origFileName
+                metaJson['name'] = origFileName
                 print(f'No name field for {localFile}. Generating from filename.')
-            
-            
-            cleanupCells(notebook['cells'])
+                
             if 'properties' not in metaJson.keys():
                 print("error: no properties found on metadata object")
                 continue
-            metaJson['properties']['cells'] = notebook['cells']
+            
+            metaJson['properties']['cells'] = cleanupCells(notebook['cells'])
+            
             exportJson(origFileName + ".json", metaJson)
         else:
             print(f"missing metadata file for {origFileName}. Skipping")
