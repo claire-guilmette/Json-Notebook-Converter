@@ -77,9 +77,15 @@ def cleanupCells(cells):
         #Synapse keeps them in a logical order instead (sources before outputs, etc.)
         #This re-orders things to match synapse.
         if 'metadata' in cell.keys():
-            newCell['metadata'] = cell.pop('metadata')
-            if 'jupyter' in newCell['metadata'].keys():
+            newCell['metadata'] = {}
+            if 'jupyter' in cell['metadata'].keys():
                 newCell['metadata']['jupyter'] = {'source_hidden':False, 'outputs_hidden':False}
+            if 'nteract' in cell['metadata'].keys():
+                newCell['metadata']['nteract'] = cell['metadata'].pop('nteract')
+            if 'collapsed' in cell['metadata'].keys():
+                newCell['metadata']['collapsed'] = cell['metadata'].pop('collapsed')
+            for key in cell['metadata'].keys():
+                newCell['metadata'][key] = cell['metadata'][key]
         newCell['source'] = cell.pop('source')
         if 'execution_count' in cell.keys():
             newCell['execution_count'] = cell.pop('execution_count')
