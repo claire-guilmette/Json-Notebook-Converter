@@ -18,6 +18,7 @@ def exportMetadata(fileName, metadata):
     except:
         print("error writing metadata file")
 
+
 def exportNotebook(fileName, cells):
     notebook = {"metadata":{}, "cells": cells}
     fileName = Path(fileName.split('.')[0] + LOCAL_NOTEBOOK_FILE_ENDING)
@@ -28,6 +29,7 @@ def exportNotebook(fileName, cells):
     except:
         print("error writing to notebook file")
 
+
 def exportJson(fileName, synapseJson):
     fileName = Path(fileName)
     print(f"Writing to {fileName}")
@@ -37,6 +39,7 @@ def exportJson(fileName, synapseJson):
     except:
         print(f"error writing to json file {fileName}")
 
+
 def importJson(fileName):
     try:
         with open(fileName, 'r') as file:
@@ -45,6 +48,26 @@ def importJson(fileName):
     except FileNotFoundError:
         print(f"File '{fileName}' not found. Please provide the correct file path.")
         sys.exit()
+
+
+def cleanupCells(cells):
+    for cell in cells:
+        #clear all outputs
+        if cell['cell_type'] == 'code':
+            cell['outputs'] = []
+            cell.pop('outputs')
+        #clear empty metadata fields to simplify diff
+        if cell['metadata'] == {}:
+            cell.pop('metadata')
+        #normalize line endings
+        modifiedLines = []
+        for line in cell['source']:
+                    #print(repr(line))
+            modifiedLine = line.replace("""\r\n""","""\n""")
+            modifiedLine = modifiedLine.replace("""\n""","""\r\n""")
+                    #print(repr(modifiedLine))
+            modifiedLines.append(modifiedLine)
+        cell['source'] = modifiedLines
 
 
 def jsonifyNotebooks():
@@ -68,24 +91,8 @@ def jsonifyNotebooks():
                 name = origFileName
                 print(f'No name field for {localFile}. Generating from filename.')
             
-            #remove empty metadata fields to minimize diff noise
-            for cell in notebook['cells']:
-                #clear all outputs
-                if cell['cell_type'] == 'code':
-                    cell['outputs'] = []
-                    cell.pop('outputs')
-                #clear empty metadata fields to simplify diff
-                if cell['metadata'] == {}:
-                    cell.pop('metadata')
-                #normalize line endings
-                modifiedLines = []
-                for line in cell['source']:
-                    #print(repr(line))
-                    modifiedLine = line.replace("""\r\n""","""\n""")
-                    modifiedLine = modifiedLine.replace("""\n""","""\r\n""")
-                    #print(repr(modifiedLine))
-                    modifiedLines.append(modifiedLine)
-                cell['source'] = modifiedLines
+            
+            cleanupCells(notebook['cells'])
             if 'properties' not in metaJson.keys():
                 print("error: no properties found on metadata object")
                 continue
@@ -95,6 +102,8 @@ def jsonifyNotebooks():
             print(f"missing metadata file for {origFileName}. Skipping")
             continue
 
+
+##Program Start Point
 i = 0
 if len(sys.argv) == 1:
     print("USAGE: python notebookify.py [json_file_1] [json_file_2] ... ")
