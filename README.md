@@ -25,10 +25,11 @@ or to convert all (could be a little excessive):
     python notebookify.py -j
  
 ## Git Ignore
-When converting to ipynb, the script saves the notebook as `[filename]_LOCAL.ipynb`, which you can then edit as needed.
+When converting to ipynb, the script saves the notebook as `[filename]_LOCAL.ipynb`, which you can then edit as needed. The synapse-specific metadata (spark configuration and the like) will be stored as `[filename]_METADATA.json`. 
 If you wish you can include the following line in your `.gitignore` to easily keep these out of the repo:
 
     *_LOCAL.ipynb
+    *_METADATA.json
 
 ## File Creation
-This util is handy for existing files, but if you want to create a new notebook you should still create and commit it through the Synapse Analytics web editor. Synapse tracks a bunch of fields in the metadata that VSCode won't know to populate.
+This util is handy for existing files, but if you want to create a new notebook you should still create and commit it through the Synapse Analytics web editor. Synapse tracks a bunch of fields in the metadata that VSCode won't know to populate (and will actively meddle with if allowed).

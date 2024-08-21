@@ -7,13 +7,24 @@ import os
 
 
 LOCAL_NOTEBOOK_FILE_ENDING = "_LOCAL.ipynb"
+JSON_METADATA_FILE_ENDING = "_METADATA.json"
 
-def exportNotebook(fileName, notebookJson):
+def exportMetadata(fileName, metadata):
+    fileName = Path(fileName.split('.')[0] + JSON_METADATA_FILE_ENDING)
+    print(f"Writing to {fileName}")
+    try:
+        with open(fileName, 'w', newline="\n") as file:
+            json.dump(metadata, file, indent='\t', sort_keys=False)
+    except:
+        print("error writing metadata file")
+
+def exportNotebook(fileName, cells):
+    notebook = {"metadata":{}, "cells": cells}
     fileName = Path(fileName.split('.')[0] + LOCAL_NOTEBOOK_FILE_ENDING)
     print(f"Writing to {fileName}")
     try:
         with open(fileName, 'w', newline="\n") as file:
-            json.dump(notebookJson, file, indent='\t', sort_keys=False)
+            json.dump(notebook, file, indent='\t', sort_keys=False)
     except:
         print("error writing to notebook file")
 
@@ -41,32 +52,49 @@ def jsonifyNotebooks():
 
     allFiles = os.listdir('.')
     localFiles = [file for file in allFiles if file.endswith(LOCAL_NOTEBOOK_FILE_ENDING)]
+    metaFiles = [file for file in allFiles if file.endswith(JSON_METADATA_FILE_ENDING)]
 
     for localFile in localFiles:
         origFileName = localFile[0:-len(LOCAL_NOTEBOOK_FILE_ENDING)]
+        metaFile = origFileName + JSON_METADATA_FILE_ENDING
         
-        notebook = importJson(localFile)
-        #Everything but the name goes in the 'properties' object, so pop name off here if exists.
-        name = ''
-        print(notebook.keys())
-        if 'name' in notebook.keys():
-            name = notebook.pop('name')
+        if metaFile in metaFiles:
+            notebook = importJson(localFile)
+            metaJson = importJson(metaFile)
+            name = ''
+            print(notebook.keys())
+            print(metaJson.keys())
+            if 'name' not in metaJson.keys():
+                name = origFileName
+                print(f'No name field for {localFile}. Generating from filename.')
+            
+            #remove empty metadata fields to minimize diff noise
+            for cell in notebook['cells']:
+                #clear all outputs
+                if cell['cell_type'] == 'code':
+                    cell['outputs'] = []
+                    cell.pop('outputs')
+                #clear empty metadata fields to simplify diff
+                if cell['metadata'] == {}:
+                    cell.pop('metadata')
+                #normalize line endings
+                for line in cell['source']:
+                    line = line.replace('\\r\\n','\\n')
+                    line = line.replace('\\n','\\r\\n')
+            if 'properties' not in metaJson.keys():
+                print("error: no properties found on metadata object")
+                continue
+            metaJson['properties']['cells'] = notebook['cells']
+            exportJson(origFileName + ".json", metaJson)
         else:
-            name = origFileName
-            print(f'No name field for {localFile}. Generating from filename.')
-        
-        #remove empty metadata fields to minimize diff noise
-        for cell in notebook['cells']:
-            if cell['metadata'] == {}:
-                cell.pop('metadata')
-        jsonObject = {'name': name,
-                      'properties': notebook}
-        exportJson(origFileName + ".json", jsonObject)
+            print(f"missing metadata file for {origFileName}. Skipping")
+            continue
 
 i = 0
 if len(sys.argv) == 1:
     print("USAGE: python notebookify.py [json_file_1] [json_file_2] ... ")
     print("Or to convert notebooks to json: python notebookify.py -j")
+    print("\tThis will combine each file named *_LOCAL.ipynb with its _METADATA.json file")
 elif (len(sys.argv) > 1 and sys.argv[1].startswith('-j')):
     jsonifyNotebooks()
     sys.exit()
@@ -82,15 +110,18 @@ for arg in sys.argv:
             if not goOn.lower().startswith('y'):
                 continue #ironically, continuing the loop means skipping the file.
         
+        if arg.endswith(JSON_METADATA_FILE_ENDING):
+            print(f"METADATA file {arg} found. Skipping.")
+            continue
         currentJson = importJson(arg)
         
-        notebookObject = currentJson['properties']
-        notebookObject['name'] = currentJson['name']
-        for cell in notebookObject['cells']:
+        cells = currentJson['properties'].pop('cells')
+        for cell in cells:
             if 'metadata' not in cell.keys():
                 cell['metadata'] = {}
-        exportNotebook(arg, notebookObject)
-
+        #cells go to the notebook object, everything else to the metadata object
+        exportMetadata(arg, currentJson)
+        exportNotebook(arg, cells)
         
     else:
         i += 1
