@@ -58,7 +58,7 @@ def cleanupCells(cells):
             cell['outputs'] = []
             cell.pop('outputs')
         #clear empty metadata fields to simplify diff
-        if cell['metadata'] == {}:
+        if cell['metadata'] == {} and not cell['metadata'].keys():
             cell.pop('metadata')
         #normalize line endings
         modifiedLines = []
@@ -75,17 +75,10 @@ def cleanupCells(cells):
         }
         #VSCode automatically alphabetizes json keys after editing a json file. (annoying, but understandable.)
         #Synapse keeps them in a logical order instead (sources before outputs, etc.)
-        #This re-orders things to match synapse.
+        #This tries to re-order things to match synapse.
         if 'metadata' in cell.keys():
-            newCell['metadata'] = {}
-            if 'jupyter' in cell['metadata'].keys():
-                newCell['metadata']['jupyter'] = {'source_hidden':False, 'outputs_hidden':False}
-            if 'nteract' in cell['metadata'].keys():
-                newCell['metadata']['nteract'] = cell['metadata'].pop('nteract')
-            if 'collapsed' in cell['metadata'].keys():
-                newCell['metadata']['collapsed'] = cell['metadata'].pop('collapsed')
-            for key in cell['metadata'].keys():
-                newCell['metadata'][key] = cell['metadata'][key]
+            newCell['metadata'] = eval('''{"jupyter": {"source_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
+            
         newCell['source'] = cell.pop('source')
         if 'execution_count' in cell.keys():
             newCell['execution_count'] = cell.pop('execution_count')
