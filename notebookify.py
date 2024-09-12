@@ -68,6 +68,10 @@ def cleanupCells(cells):
             modifiedLine = modifiedLine.replace("""\n""","""\r\n""")
                     #print(repr(modifiedLine))
             modifiedLines.append(modifiedLine)
+        #Synapse has a weird obsession with always having an empty string as the last line.
+        #VSCode likes to delete these. This puts them back to minimize the diff.
+        #if cell['cell_type'] == 'code' and modifiedLines and not (modifiedLines[-1] == ""):
+        #    modifiedLines.append("")
         cell['source'] = modifiedLines
 
         newCell = {
@@ -77,7 +81,7 @@ def cleanupCells(cells):
         #Synapse keeps them in a logical order instead (sources before outputs, etc.)
         #This tries to re-order things to match synapse.
         if 'metadata' in cell.keys():
-            newCell['metadata'] = eval('''{"jupyter": {"source_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
+            newCell['metadata'] = eval('''{"acollapsed": false, "jupyter": {"asource_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
             
         newCell['source'] = cell.pop('source')
         if 'execution_count' in cell.keys():
@@ -87,6 +91,17 @@ def cleanupCells(cells):
         newCells.append(newCell)
     return newCells
 
+def dealphabetizeJsonKeys(fileName):
+    fileName = Path(fileName)
+    print(f"Dealphabetizing {fileName}")
+    try:
+        lines = []
+        with open(fileName, 'r', newline="\n") as file:
+            #read in line by line
+            lines.append(line.replace('acollapsed', 'collapsed').replace('asource_hidden','source_hidden'))
+    except:
+        print(f"error writing to json file {fileName}")
+    
 
 def jsonifyNotebooks():
     print(f"searching for LOCAL files in {os.getcwd()}")
