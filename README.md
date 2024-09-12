@@ -1,4 +1,5 @@
 # Json-Notebook-Converter (notebookify.py)
+A small script to convert between valid jupyter python notebooks (.ipynb) and their Azure Synapse equivalent json file. 
 
 ## Installation
 Save the script to your machine. Then you can either add its folder to your path variable or create an alias to it for easy access.
@@ -20,13 +21,13 @@ or to convert all (could be a little excessive):
     python notebookify.py *.json
 
 
-#### To convert all notebooks in the working dir back to json
+#### To convert all notebooks in the working dir back to json:
 
     python notebookify.py -j
  
 ## Git Ignore
 When converting to ipynb, the script saves the notebook as `[filename]_LOCAL.ipynb`, which you can then edit as needed. The synapse-specific metadata (spark configuration and the like) will be stored as `[filename]_METADATA.json`. 
-If you wish you can include the following line in your `.gitignore` to easily keep these out of the repo:
+If you wish you can include the following lines in your `.gitignore` to easily keep these out of the repo:
 
     *_LOCAL.ipynb
     *_METADATA.json
