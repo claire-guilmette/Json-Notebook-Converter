@@ -81,7 +81,8 @@ def cleanupCells(cells):
         #Synapse keeps them in a logical order instead (sources before outputs, etc.)
         #This tries to re-order things to match synapse.
         if 'metadata' in cell.keys():
-            newCell['metadata'] = eval('''{"acollapsed": false, "jupyter": {"asource_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
+            newCell['metadata'] = eval('''{"collapsed": False, "jupyter": {"source_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
+            #newCell['metadata'] = eval('''{"acollapsed": False, "jupyter": {"asource_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
             
         newCell['source'] = cell.pop('source')
         if 'execution_count' in cell.keys():
@@ -97,8 +98,9 @@ def dealphabetizeJsonKeys(fileName):
     try:
         lines = []
         with open(fileName, 'r', newline="\n") as file:
+            print("not implemented")
             #read in line by line
-            lines.append(line.replace('acollapsed', 'collapsed').replace('asource_hidden','source_hidden'))
+            #lines.append(line.replace('acollapsed', 'collapsed').replace('asource_hidden','source_hidden'))
     except:
         print(f"error writing to json file {fileName}")
     
