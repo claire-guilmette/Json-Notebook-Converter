@@ -68,10 +68,13 @@ def cleanupCells(cells):
             modifiedLine = modifiedLine.replace("""\n""","""\r\n""")
                     #print(repr(modifiedLine))
             modifiedLines.append(modifiedLine)
-        #Synapse has a weird obsession with always having an empty string as the last line.
-        #VSCode likes to delete these. This puts them back to minimize the diff.
-        #if cell['cell_type'] == 'code' and modifiedLines and not (modifiedLines[-1] == ""):
-        #    modifiedLines.append("")
+        #Synapse allows the last line of a code cell to be an empty string, VSCode does not. 
+        if cell['cell_type'] == 'code': 
+            if modifiedLines == []:
+                modifiedLines.append("")
+            #We previously swapped it for a single space, so swap it back now.
+            elif (modifiedLines[-1] == " "):
+                modifiedLines[-1] = ""
         cell['source'] = modifiedLines
 
         newCell = {
@@ -168,6 +171,9 @@ for arg in sys.argv:
         for cell in cells:
             if 'metadata' not in cell.keys():
                 cell['metadata'] = {}
+            #VSCode (again, reasonably) strips an empty-string row from the end of code cells. Synapse does not. This makes VSCode leave it alone.
+            if "source" in cell.keys() and cell["source"][-1] == "":
+                cell["source"][-1] = " "
         #cells go to the notebook object, everything else to the metadata object
         exportMetadata(arg, currentJson)
         exportNotebook(arg, cells)
