@@ -81,7 +81,7 @@ def cleanupCells(cells):
         #Synapse keeps them in a logical order instead (sources before outputs, etc.)
         #This tries to re-order things to match synapse.
         if 'metadata' in cell.keys():
-            newCell['metadata'] = eval('''{"collapsed": False, "jupyter": {"source_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
+            newCell['metadata'] = eval('''{"jupyter": {"source_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}},"collapsed": False},''')
             #newCell['metadata'] = eval('''{"acollapsed": False, "jupyter": {"asource_hidden": False,"outputs_hidden": False},"nteract": {"transient": {"deleting": False}}},''')
             
         newCell['source'] = cell.pop('source')
