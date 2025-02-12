@@ -172,7 +172,7 @@ for arg in sys.argv:
             if 'metadata' not in cell.keys():
                 cell['metadata'] = {}
             #VSCode (again, reasonably) strips an empty-string row from the end of code cells. Synapse does not. This makes VSCode leave it alone.
-            if "source" in cell.keys() and cell["source"][-1] == "":
+            if "source" in cell.keys() and cell["source"] and cell["source"][-1] == "":
                 cell["source"][-1] = " "
         #cells go to the notebook object, everything else to the metadata object
         exportMetadata(arg, currentJson)
